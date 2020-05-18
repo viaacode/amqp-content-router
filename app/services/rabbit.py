@@ -6,15 +6,16 @@
 #  app/services/rabbit.py
 #
 
-import pika
-import os
-import requests
 import json
 import logging
+import os
 import time
 
 from viaa.configuration import ConfigParser
 from viaa.observability import logging
+
+import pika
+import requests
 
 configParser = ConfigParser()
 log = logging.get_logger(__name__, config=self.configParser)
@@ -52,6 +53,7 @@ class RabbitClient:
 
     def listen(self, on_message_callback, queue=None):
         incoming_config = self.rabbitConfig["incoming"]
+
         if queue is None:
             queue = incoming_config["queue"]
 
