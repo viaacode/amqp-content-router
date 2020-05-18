@@ -19,7 +19,7 @@ log = logging.get_logger(__name__, config=self.configParser)
 rabbitClient = rabbit.RabbitClient()
 
 
-def handle_message(self, channel, method, header, body):
+def handle_message(self, channel, method, properties, body):
     # 1. Parse message
     root_tag = message_parser.get_message_root_tag(body)
 
