@@ -13,32 +13,36 @@ import json
 import logging
 import time
 
+from viaa.configuration import ConfigParser
+from viaa.observability import logging
+
+configParser = ConfigParser()
+log = logging.get_logger(__name__, config=self.configParser)
+
 
 class RabbitClient:
     def __init__(self):
-        # TODO: get from config
-        self.RABBIT_EXCHANGE = ""
-        self.RABBIT_QUEUE = ""
-        self.RABBIT_USER = ""
-        self.RABBIT_PASS = ""
-        self.RABBIT_HOST = ""
-        self.RABBIT_PORT = ""
-        self.RABBIT_INCOMING_QUEUE = ""
+        self.rabbitConfig = configParser.app_cfg["rabbitmq"]
 
         # TODO: Check if opening connection and channel is okay in __init__
-        self.credentials = pika.PlainCredentials(self.RABBIT_USER, self.RABBIT_PASS)
+        self.credentials = pika.PlainCredentials(
+            self.rabbitConfig["user"], self.rabbitConfig["passwd"]
+        )
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                host=self.RABBIT_HOST, port=self.RABBIT_PORT, credentials=credentials,
+                host=self.rabbitConfig["host"],
+                port=self.rabbitConfig["port"],
+                credentials=credentials,
             )
         )
 
         self.channel = connection.channel()
 
     def send_message(self, body, routing_key):
+        outgoing_config = self.rabbitConfig["outgoing"]
         try:
             self.channel.basic_publish(
-                exchange=self.RABBIT_EXCHANGE, routing_key=routing_key, body=body
+                exchange=outgoing_config["exchange"], routing_key=routing_key, body=body
             )
 
             return True
@@ -46,35 +50,11 @@ class RabbitClient:
         except pika.exceptions.AMQPConnectionError as ce:
             raise ce
 
-    def on_message(self, channel, method_frame, header_frame, body):
-        try:
+    def listen(self, on_message_callback, queue=None):
+        incoming_config = self.rabbitConfig["incoming"]
+        if queue is None:
+            queue = incoming_config["queue"]
 
-            self.logger.info("RMQ_BRIDGE: on_message", body=body)
-
-            message = {
-                "delivery_tag": method_frame.delivery_tag,
-                "message": body.decode("utf-8"),
-            }
-
-            res = requests.post(self.EVENT_LISTEN_URL, json=message, timeout=30.0)
-
-            if res.status_code == 200:
-                # Flask app received message with status 200-ok
-                channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-            else:
-                # Later on we might choose to not ack here so that any failing messages are
-                # kept on queue for a retry
-                # but it might also block new messages from being processed (to be tested after deployed...)
-                self.logger.warning(
-                    "RMQBridge got error from service, discarding message",
-                    response_content=res.content,
-                )
-                channel.basic_ack(delivery_tag=method_frame.delivery_tag)
-
-        except requests.exceptions.ReadTimeout as te:
-            self.logger.error("RMQBridge: timeout error during processing", body=body)
-
-    def listen(self, on_message_callback, queue = self.RABBIT_INCOMING_QUEUE):
         try:
             while True:
                 try:
