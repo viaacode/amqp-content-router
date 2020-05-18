@@ -15,14 +15,12 @@ from viaa.configuration import ConfigParser
 from viaa.observability import logging
 
 import pika
-import requests
-
-configParser = ConfigParser()
-log = logging.get_logger(__name__, config=self.configParser)
 
 
 class RabbitClient:
     def __init__(self):
+        configParser = ConfigParser()
+        self.log = logging.get_logger(__name__, config=configParser)
         self.rabbitConfig = configParser.app_cfg["rabbitmq"]
 
         # TODO: Check if opening connection and channel is okay in __init__
@@ -33,7 +31,7 @@ class RabbitClient:
             pika.ConnectionParameters(
                 host=self.rabbitConfig["host"],
                 port=self.rabbitConfig["port"],
-                credentials=credentials,
+                credentials=self.credentials,
             )
         )
 

@@ -11,5 +11,8 @@ import lxml.etree as etree
 
 def get_message_root_tag(message):
     root = etree.fromstring(message)
+
+    # We need the root tag without any namespaces.
     root_tag = etree.QName(root).localname
+
     return root_tag

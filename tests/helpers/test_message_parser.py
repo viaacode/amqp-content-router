@@ -6,7 +6,7 @@ EVENTS_TO_TEST = ["essenceLinkedEvent", "getMetadataResponse"]
 
 
 @pytest.mark.parametrize("event", EVENTS_TO_TEST)
-def test_essence_linked(event):
+def test_get_message_root_tag(event):
     xml = resources.load_xml_resource(event)
     root_tag = message_parser.get_message_root_tag(xml)
 
