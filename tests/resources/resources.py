@@ -7,5 +7,4 @@ def load_xml_resource(eventname):
     )
 
     fixture_content = open(os.path.join(__location__, f"{eventname}.xml"), "rb").read()
-    fixture_content = fixture_content[:-1]  # strip off trailing newline \n
     return fixture_content

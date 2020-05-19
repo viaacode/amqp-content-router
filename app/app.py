@@ -25,7 +25,7 @@ class EventListener:
         root_tag = message_parser.get_message_root_tag(body)
 
         # 2. Construct correct routing_key
-        routing_key = f"{self.config['routing_key_prefix']}{root_tag}"
+        routing_key = f"{self.config['rabbitmq']['routing_key']}.{root_tag}"
 
         # 3. Publish message with new routing key
         self.rabbitClient.send_message(body, routing_key)

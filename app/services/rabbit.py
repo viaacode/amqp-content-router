@@ -37,11 +37,27 @@ class RabbitClient:
 
         self.channel = connection.channel()
 
+        channel.exchange_declare(
+            exchange=self.rabbitConfig["exchange"],
+            exchange_type=self.rabbitConfig["exchange_type"],
+            durable=True,
+        )
+        channel.queue_declare(
+            queue=self.rabbitConfig["queue"], exclusive=True, durable=True
+        )
+
+        channel.queue_bind(
+            exchange=self.rabbitConfig["exchange"],
+            queue=self.rabbitConfig["queue"],
+            routing_key=self.rabbitConfig["routing_key"],
+        )
+
     def send_message(self, body, routing_key):
-        outgoing_config = self.rabbitConfig["outgoing"]
         try:
             self.channel.basic_publish(
-                exchange=outgoing_config["exchange"], routing_key=routing_key, body=body
+                exchange=self.rabbitConfig["exchange"],
+                routing_key=routing_key,
+                body=body,
             )
 
             return True
@@ -50,21 +66,13 @@ class RabbitClient:
             raise ce
 
     def listen(self, on_message_callback, queue=None):
-        incoming_config = self.rabbitConfig["incoming"]
-
         if queue is None:
-            queue = incoming_config["queue"]
+            queue = self.rabbitConfig["queue"]
 
         try:
             while True:
                 try:
                     channel = self.connection.channel()
-
-                    # TODO: Check if application should declare queues
-                    # result = channel.queue_declare(
-                    #     queue=self.RABBIT_LISTEN_QUEUE, exclusive=False, durable=True
-                    # )
-                    # callback_queue = result.method.queue
 
                     channel.basic_consume(
                         queue=queue, on_message_callback=on_message_callback
