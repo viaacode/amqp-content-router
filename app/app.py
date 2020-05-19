@@ -26,10 +26,15 @@ class EventListener:
 
         # 2. Construct correct routing_key
         routing_key = f"{self.config['rabbitmq']['routing_key']}.{root_tag}"
+        self.log.info(f"Publishing message with new routing key: {routing_key}.")
 
         # 3. Publish message with new routing key
         self.rabbitClient.send_message(body, routing_key)
 
+        # 4. ack message
+        channel.basic_ack(method.delivery_tag)
+
     def start(self):
         # Start listening for incoming messages
-        self.rabbitClient.listen(handle_message)
+        self.log.info("Start to listen for messages...")
+        self.rabbitClient.listen(self.handle_message)

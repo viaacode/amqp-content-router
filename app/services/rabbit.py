@@ -35,18 +35,17 @@ class RabbitClient:
             )
         )
 
-        self.channel = connection.channel()
+        self.channel = self.connection.channel()
 
-        channel.exchange_declare(
+        self.channel.exchange_declare(
             exchange=self.rabbitConfig["exchange"],
             exchange_type=self.rabbitConfig["exchange_type"],
             durable=True,
         )
-        channel.queue_declare(
-            queue=self.rabbitConfig["queue"], exclusive=True, durable=True
-        )
 
-        channel.queue_bind(
+        self.channel.queue_declare(queue=self.rabbitConfig["queue"], durable=True)
+
+        self.channel.queue_bind(
             exchange=self.rabbitConfig["exchange"],
             queue=self.rabbitConfig["queue"],
             routing_key=self.rabbitConfig["routing_key"],
