@@ -23,10 +23,10 @@ class RabbitClient:
         self.log = logging.get_logger(__name__, config=configParser)
         self.rabbitConfig = configParser.app_cfg["rabbitmq"]
 
-        # TODO: Check if opening connection and channel is okay in __init__
         self.credentials = pika.PlainCredentials(
             self.rabbitConfig["user"], self.rabbitConfig["passwd"]
         )
+
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=self.rabbitConfig["host"],
@@ -37,13 +37,28 @@ class RabbitClient:
 
         self.channel = self.connection.channel()
 
+        __setup_rabbit_exchange()
+
+    def __setup_rabbit_exchanges(self):
         self.channel.exchange_declare(
             exchange=self.rabbitConfig["exchange"],
             exchange_type=self.rabbitConfig["exchange_type"],
             durable=True,
         )
+        
+        self.channel.exchange_declare(
+            exchange=self.rabbitConfig["dead_letter_exchange"],
+            type=self.rabbitConfig["exchange_type"],
+            durable=True,
+        )
 
-        self.channel.queue_declare(queue=self.rabbitConfig["queue"], durable=True)
+        self.channel.queue_declare(
+            queue=self.rabbitConfig["queue"],
+            durable=True,
+            arguments={
+                "x-dead-letter-exchange": self.rabbitConfig["dead_letter_exchange"],
+            },
+        )
 
         self.channel.queue_bind(
             exchange=self.rabbitConfig["exchange"],
@@ -61,8 +76,8 @@ class RabbitClient:
 
             return True
 
-        except pika.exceptions.AMQPConnectionError as ce:
-            raise ce
+        except pika.exceptions.AMQPConnectionError as error:
+            raise error
 
     def listen(self, on_message_callback, queue=None):
         if queue is None:

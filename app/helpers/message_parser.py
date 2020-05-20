@@ -10,7 +10,10 @@ import lxml.etree as etree
 
 
 def get_message_root_tag(message):
-    root = etree.fromstring(message)
+    try:
+        root = etree.fromstring(message)
+    except etree.XMLSyntaxError as syntaxError:
+        raise syntaxError
 
     # We need the root tag without any namespaces.
     root_tag = etree.QName(root).localname
