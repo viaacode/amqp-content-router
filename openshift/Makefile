@@ -5,7 +5,7 @@ SHELL = /bin/bash
 
 .PHONY: all
 
-NAMESPACE = viaa-tools
+NAMESPACE = vrt-intake
 OC_PROJECT = ${NAMESPACE}
 
 APP_NAME = amqp-content-router
