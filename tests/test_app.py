@@ -25,7 +25,7 @@ def test_handle_message(event, mock_rabbit, mocker):
     eventListener.handle_message(channel_mock, method_mock, None, xml)
 
     # ASSERT
-    spy.assert_called_with(body=xml, routing_key=routing_key)
+    spy.assert_called_with(xml, routing_key)
 
 
 def test_handle_invalid_message(mock_rabbit, mocker, capsys):
@@ -56,4 +56,4 @@ def test_start(mock_rabbit, mocker):
     eventListener.start()
 
     # ASSERT
-    spy.assert_called_with(on_message_callback=eventListener.handle_message)
+    spy.assert_called_with(eventListener.handle_message)
