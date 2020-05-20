@@ -7,7 +7,8 @@ RUN addgroup --system appgroup && adduser --system appuser --ingroup appgroup
 WORKDIR /app
 
 # Copy all files
-COPY --chown=appuser:appgroup . .
+COPY . .
+RUN chown -R appuser:appgroup /app
 
 # We install all our Python dependencies. Add the extra index url because some
 # packages are in the meemoo repo.
