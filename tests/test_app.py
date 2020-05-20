@@ -13,7 +13,7 @@ EVENTS_TO_TEST = ["essenceLinkedEvent", "getMetadataResponse"]
 @pytest.mark.parametrize("event", EVENTS_TO_TEST)
 def test_handle_message(event, mock_rabbit, mocker):
     # ARRANGE
-    prefix = ConfigParser.app_cfg["rabbitmq"]["routing_key"]
+    prefix = ConfigParser().app_cfg["rabbitmq"]["routing_key"]
     eventListener = EventListener()
     routing_key = f"{prefix}.{event}"
 
