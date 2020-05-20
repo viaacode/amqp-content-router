@@ -1,0 +1,14 @@
+viaa:
+    logging:
+        level: DEBUG
+app:
+    rabbitmq:
+        user: !ENV ${RABBIT_MQ_USER}
+        passwd: !ENV ${RABBIT_MQ_PASSWD}
+        host: !ENV ${RABBIT_MQ_HOST}
+        port: 5672
+        queue: !ENV ${RABBITMQ_QUEUE}
+        exchange: !ENV ${RABBITMQ_EXCHANGE}
+        exchange_type: topic
+        routing_key: example
+    
