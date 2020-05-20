@@ -22,6 +22,12 @@ Currently only XML messages are supported and only the root tag gets parsed.
 
 2. Change into the new directory.
 
+3. Set the needed config:
+
+    Included in this repository is a `config.yml.example` file. 
+    All values in the config have to be set in order for the application to function correctly.
+    You can use `!ENV ${EXAMPLE}` as a config value to make the application get the `EXAMPLE` environment variable.
+
 ### Running locally
 
 **Note**: As per the aforementioned requirements, this is a Python3
@@ -44,17 +50,12 @@ is < 3.
         --extra-index-url http://do-prd-mvn-01.do.viaa.be:8081/repository/pypi-all/simple \
         --trusted-host do-prd-mvn-01.do.viaa.be
     ```
-4. Set the needed config and environment variables:
 
-    Included in this repository is a `config.yml.example` file. 
-    All values in the config have to be set in order for the application to function correctly.
-    You can use `!ENV ${EXAMPLE}` as a config value to make the application get the `EXAMPLE` environment variable.
-
-5. Run the tests with:
+4. Run the tests with:
 
     `$ pytest -v`
 
-6. Run the application:
+5. Run the application:
 
     `$ python main.py`
 
