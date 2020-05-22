@@ -11,5 +11,5 @@ app:
         exchange: !ENV ${RABBITMQ_EXCHANGE}
         dead_letter_exchange: !ENV ${RABBITMQ_DEAD_LETTER_EXCHANGE}
         exchange_type: topic
-        routing_key: example
+        routing_key: event.to.viaa
     
