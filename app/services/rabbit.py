@@ -37,7 +37,7 @@ class RabbitClient:
 
         self.channel = self.connection.channel()
 
-        __setup_rabbit_exchange()
+        self.__setup_rabbit_exchanges()
 
     def __setup_rabbit_exchanges(self):
         self.channel.exchange_declare(
@@ -45,10 +45,10 @@ class RabbitClient:
             exchange_type=self.rabbitConfig["exchange_type"],
             durable=True,
         )
-        
+
         self.channel.exchange_declare(
             exchange=self.rabbitConfig["dead_letter_exchange"],
-            type=self.rabbitConfig["exchange_type"],
+            exchange_type=self.rabbitConfig["exchange_type"],
             durable=True,
         )
 
