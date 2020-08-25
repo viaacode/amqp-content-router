@@ -13,21 +13,22 @@ EVENTS_TO_TEST = ["essenceLinkedEvent", "getMetadataResponse"]
 @pytest.mark.parametrize("event", EVENTS_TO_TEST)
 def test_handle_message(event, mock_rabbit, mocker):
     # ARRANGE
-    prefix = ConfigParser().app_cfg["rabbitmq"]["routing_key"]
     eventListener = EventListener()
-    routing_key = f"{prefix}.{event}"
-
     xml = resources.load_xml_resource(event)
+
     spy = mocker.spy(eventListener.rabbitClient, "send_message")
     channel_mock = mocker.MagicMock()
     method_mock = mocker.MagicMock()
     method_mock.delivery_tag = 1
+    method_mock.routing_key = "test_key"
+
+    expected_key = f"test_key.{event}"
 
     # ACT
     eventListener.handle_message(channel_mock, method_mock, None, xml)
 
     # ASSERT
-    spy.assert_called_with(xml, routing_key)
+    spy.assert_called_with(xml, expected_key)
 
 
 def test_handle_invalid_message(mock_rabbit, mocker, capsys):
