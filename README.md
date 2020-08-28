@@ -5,7 +5,9 @@
 As Rabbit doensn't support content-based routing natively, this service can be used to use content-based routing.
 The service connects to a queue and parses the incoming messages. 
 Based on the root-tag in the message, the message gets published with a new routing key.
+The new routing key is `<original routing key>.<root tag of the message>`.
 Currently only XML messages are supported and only the root tag gets parsed.
+The input queue and output exchange are configured in `config.yml`.
 
 ## Prerequisites
 

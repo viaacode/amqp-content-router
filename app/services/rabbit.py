@@ -37,34 +37,6 @@ class RabbitClient:
 
         self.channel = self.connection.channel()
 
-        self.__setup_rabbit_exchanges()
-
-    def __setup_rabbit_exchanges(self):
-        self.channel.exchange_declare(
-            exchange=self.rabbitConfig["exchange"],
-            exchange_type=self.rabbitConfig["exchange_type"],
-            durable=True,
-        )
-
-        self.channel.exchange_declare(
-            exchange=self.rabbitConfig["dead_letter_exchange"],
-            exchange_type=self.rabbitConfig["exchange_type"],
-            durable=True,
-        )
-
-        self.channel.queue_declare(
-            queue=self.rabbitConfig["queue"],
-            durable=True,
-            arguments={
-                "x-dead-letter-exchange": self.rabbitConfig["dead_letter_exchange"],
-            },
-        )
-
-        self.channel.queue_bind(
-            exchange=self.rabbitConfig["exchange"],
-            queue=self.rabbitConfig["queue"],
-            routing_key=self.rabbitConfig["routing_key"],
-        )
 
     def send_message(self, body, routing_key):
         try:
@@ -110,4 +82,4 @@ class RabbitClient:
         except KeyboardInterrupt:
             channel.stop_consuming()
 
-        connection.close()
+        self.connection.close()

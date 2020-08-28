@@ -36,7 +36,7 @@ class EventListener:
             channel.basic_reject(method.delivery_tag, requeue=False)
             return
 
-        routing_key = f"{self.config['rabbitmq']['routing_key']}.{root_tag}"
+        routing_key = f"{method.routing_key}.{root_tag}"
         self.log.info(f"Publishing message with new routing key: {routing_key}.")
 
         try:
