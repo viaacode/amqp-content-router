@@ -47,7 +47,7 @@ pipeline {
                 container('oc') {
                     script {
                         sh '''#!/bin/bash
-                        oc new-build -l --strategy=docker --name amqp-content-router-from-jenkins
+                        oc new-build https://github.com/viaacode/amqp-content-router.git --strategy=docker --name amqp-content-router-from-jenkins -n vrt-intake
                         '''
                     }
                 }
