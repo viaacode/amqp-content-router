@@ -18,6 +18,12 @@ pipeline {
             - cat
             tty: true
             imagePullPolicy: Always
+          - name: oc
+            image: image-registry.openshift-image-registry.svc:5000/ci-cd/py:3.7
+            command:
+            - cat
+            tty: true
+            imagePullPolicy: Always
         '''.stripIndent()
         }
     }
@@ -25,10 +31,21 @@ pipeline {
         timeout(time: 45, unit: 'MINUTES')
     }
     stages {
-        stage('Checkout code'){
+        stage('Checkout code') {
             steps {
                 checkout scm
-                sh 'ls -al'
+            }
+        }
+        stage('Test code') {
+            steps {
+                // test
+            }
+        }
+        stage('Build code') {
+            steps {
+                container('oc') {
+                    sh 'make -f ./openshift/Makefile start-build'
+                }
             }
         }
     }
