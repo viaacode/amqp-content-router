@@ -48,7 +48,7 @@ pipeline {
                     script {
                         sh '''#!/bin/bash
                         oc import-image python:3.7 --confirm
-                        oc new-build https://github.com/viaacode/amqp-content-router.git --strategy=docker --docker-image=python:3.7 --name amqp-content-router-from-jenkins -n vrt-intake --image-stream="openshift/python:3.8-ubi8
+                        oc new-build https://github.com/viaacode/amqp-content-router.git --strategy=docker --docker-image=python:3.7 --name amqp-content-router-from-jenkins -n vrt-intake
                         '''
                     }
                 }
