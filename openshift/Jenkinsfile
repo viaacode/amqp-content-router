@@ -52,8 +52,7 @@ pipeline {
                 container('oc') {
                     script {
                         sh '''#!/bin/bash
-                        oc import-image python:3.7 --confirm
-                        oc new-build --strategy=docker --docker-image=python:3.7 --name amqp-content-router-from-jenkins -n vrt-intake .
+                        oc new-build --strategy=docker --name amqp-content-router-from-jenkins -n vrt-intake .
                         '''
                     }
                 }
