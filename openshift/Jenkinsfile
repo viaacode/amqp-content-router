@@ -17,7 +17,6 @@ pipeline {
             command:
             - cat
             tty: true
-            imagePullPolicy: Always
           - name: oc
             image: image-registry.openshift-image-registry.svc:5000/ci-cd/py:3.7
             command:
@@ -38,13 +37,19 @@ pipeline {
         }
         stage('Test code') {
             steps {
-                // test
+                sh 'pip install -r requirements.txt'
+                sh 'cp .env.example .env'
+                sh 'pytest -vvv'
             }
         }
         stage('Build code') {
             steps {
                 container('oc') {
-                    sh 'make -f ./openshift/Makefile start-build'
+                    script {
+                        sh '''#!/bin/bash
+                        oc new-build -l --strategy=docker --name amqp-content-router-from-jenkins
+                        '''
+                    }
                 }
             }
         }
