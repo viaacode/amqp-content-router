@@ -1,85 +1,35 @@
 pipeline {
     agent {
-      node {
-        // spin up a pod to run this build on
-        label 'docker'
-      }
+        kubernetes {
+            defaultContainer 'default'
+            yaml '''\
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            component: builder
+            lang: python
+            app: amqp-content-router
+        spec:
+          containers:
+          - name: default
+            image: python:3.7
+            command:
+            - cat
+            tty: true
+            imagePullPolicy: Always
+        '''.stripIndent()
+        }
     }
     options {
         timeout(time: 45, unit: 'MINUTES')
     }
     stages {
-        stage('Build docker image') {
+        stage('Checkout code'){
             steps {
-                sh 'make -f ./openshift/Makefile build'
+                checkout scm
+                sh 'ls -al'
             }
-        }
-        stage('Run tests in container') {
-            steps {
-                sh 'make -f ./openshift/Makefile test'
-            }
-        }
-        stage('Run linter in container') {
-            steps {
-                sh 'make -f ./openshift/Makefile lint'
-            }
-        }
-        stage('Push to Docker repo') {
-            steps {
-                sh 'make -f ./openshift/Makefile push'
-            }
-        }
-        stage('Tag INT') {
-            steps {
-                sh 'make -f ./openshift/Makefile tag-int'
-            }
-        }
-        stage('Deploy INT') {
-            steps {
-                sh 'make -f ./openshift/Makefile deploy-int'
-            }
-        }
-        stage('Test INT') {
-            steps {
-                sh 'make -f ./openshift/Makefile test-int'
-            }
-        }
-        stage('Tag QAS') {
-            steps {
-                sh 'make -f ./openshift/Makefile tag-qas'
-            }
-        }
-        stage('Deploy qas') {
-            steps {
-                sh 'make -f ./openshift/Makefile deploy-qas'
-            }
-        }
-        stage('Test QAS') {
-            steps {
-                sh 'make -f ./openshift/Makefile test-qas'
-            }
-        }
-        stage('Approve') {
-            steps {
-                input message: "Do you want to approve the deploy in production?", id: "approval"
-                sh 'make -f ./openshift/Makefile approved'
-            }
-        }
-        stage('Tag PRD') {
-            steps {
-                sh 'make -f ./openshift/Makefile tag-prd'
-            }
-        }
-        stage('Deploy PRD') {
-            steps {
-                sh 'make -f ./openshift/Makefile deploy-prd'
-            }
-        }
-    }
-    post {
-        always {
-            sh 'make -f ./openshift/Makefile post-clean'
-            cleanWs()
         }
     }
 }
