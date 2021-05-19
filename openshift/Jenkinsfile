@@ -52,7 +52,7 @@ pipeline {
                 container('oc') {
                     script {
                         sh '''#!/bin/bash
-                        oc new-build --strategy=docker --image-stream="openshift/python:3.8-ubi8" --name amqp-content-router-from-jenkins -n vrt-intake .
+                        oc new-build --strategy=docker --name amqp-content-router-from-jenkins -n meemoo-dev-playground .
                         '''
                     }
                 }
