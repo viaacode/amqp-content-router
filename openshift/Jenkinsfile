@@ -52,8 +52,10 @@ pipeline {
                 container('oc') {
                     script {
                         sh '''#!/bin/bash
+                        login_oc.sh default-route-openshift-image-registry.meemoo2-2bc857e5f10eb63ab790a3a1d19a696c-i000.eu-de.containers.appdomain.cloud > /dev/null || echo ok
+                        oc project vrt-intake
                         oc import-image python:3.7 --confirm
-                        oc new-build --strategy=docker --name amqp-content-router-from-jenkins -n meemoo-dev-playground .
+                        oc new-build --strategy=docker --name amqp-content-router-from-jenkins -n vrt-intake .
                         '''
                     }
                 }
