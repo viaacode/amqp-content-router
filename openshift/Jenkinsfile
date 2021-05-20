@@ -40,13 +40,14 @@ pipeline {
         APP_REPO = 'https://github.com/viaacode/amqp-content-router.git'
         OC_URL = 'https://c113-e.private.eu-de.containers.cloud.ibm.com:30227'
         APP_NAME = 'amqp-content-router'
+        TAG_NAME = "${env.TAG_NAME}"
+        BRANCH_NAME = "${env.BRANCH_NAME}"
+        GIT_COMMIT = "${env.GIT_COMMIT}"
     }
     stages {
         stage('Checkout code') {
             steps {
                 checkout scm
-                echo "${env.TAG_NAME}"
-                echo "${env.BRANCH_NAME}"
             }
         }
         stage('Test code') {
@@ -64,8 +65,8 @@ pipeline {
                         login_oc.sh $OC_URL > /dev/null || echo ok
                         oc project $OC_PROJECT
                         oc import-image $BASE_IMG --confirm
-                        oc new-build --strategy=docker --name $APP_NAME -n $OC_PROJECT . && sleep 1
-                        oc logs -f bc/$APP_NAME
+                        oc new-build --strategy=docker --name $APP_NAME-$GIT_COMMIT -n $OC_PROJECT . && sleep 1
+                        oc logs -f bc/$APP_NAME-$GIT_COMMIT | egrep 'Push successful'
                         '''
                     }
                 }
