@@ -65,8 +65,8 @@ pipeline {
                         login_oc.sh $OC_URL > /dev/null || echo ok
                         oc project $OC_PROJECT
                         oc import-image $BASE_IMG --confirm
-                        oc new-build --strategy=docker --name $APP_NAME-$GIT_COMMIT -n $OC_PROJECT . && sleep 1
-                        oc logs -f bc/$APP_NAME-$GIT_COMMIT | egrep 'Push successful'
+                        oc new-build --strategy=docker --name $APP_NAME-$GIT_SHORT_COMMIT -n $OC_PROJECT . && sleep 1
+                        oc logs -f bc/$APP_NAME-$GIT_SHORT_COMMIT | egrep 'Push successful'
                         '''
                     }
                 }
