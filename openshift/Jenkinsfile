@@ -79,7 +79,7 @@ pipeline {
         }
         stage('Deploy PRD') {
             when {
-                tag 'v*.*.*'
+                tag pattern: '^v*', comparator: "REGEXP"
             }
             steps {
                 echo "${env.BRANCH_NAME}"
