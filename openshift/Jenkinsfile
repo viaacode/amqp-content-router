@@ -48,6 +48,8 @@ pipeline {
         stage('Checkout code') {
             steps {
                 checkout scm
+                echo "${env.BRANCH_NAME}"
+                echo "${env.TAG_NAME}"
             }
         }
         stage('Test code') {
