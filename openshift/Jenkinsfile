@@ -48,6 +48,7 @@ pipeline {
         stage('Checkout code') {
             steps {
                 checkout scm
+                echo "${GIT_COMMIT}"
                 echo "${env.BRANCH_NAME}"
                 echo "${env.TAG_NAME}"
             }
