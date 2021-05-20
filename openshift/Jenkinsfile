@@ -40,8 +40,6 @@ pipeline {
         APP_REPO = 'https://github.com/viaacode/amqp-content-router.git'
         OC_URL = 'https://c113-e.private.eu-de.containers.cloud.ibm.com:30227'
         APP_NAME = 'amqp-content-router'
-        TAG_NAME = "${env.TAG_NAME}"
-        BRANCH_NAME = "${env.BRANCH_NAME}"
         GIT_SHORT_COMMIT = sh(script: "printf \$(git rev-parse --short ${GIT_COMMIT})", returnStdout: true)
     }
     stages {
@@ -103,7 +101,7 @@ pipeline {
         }
         stage('Deploy PRD') {
             when {
-                tag pattern: '^v*', comparator: 'REGEXP'
+                buildingTag()
             }
             steps {
                 container('oc') {
