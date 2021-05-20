@@ -61,5 +61,29 @@ pipeline {
                 }
             }
         }
+        stage('Deploy INT') {
+            when {
+                branch 'ci-test'
+            }
+            steps {
+                echo 'mock tag and deploy INT'
+            }
+        }
+        stage('Deploy QAS') {
+            when {
+                branch 'ci-test'
+            }
+            steps {
+                echo 'mock tag and deploy QAS'
+            }
+        }
+        stage('Deploy PRD') {
+            when {
+                buildingTag()
+            }
+            steps {
+                echo 'mock tag and deploy PRD'
+            }
+        }
     }
 }
