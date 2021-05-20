@@ -82,8 +82,6 @@ pipeline {
         stage('Deploy PRD') {
             when {
                 buildingTag()
-                tag pattern: '^v*', comparator: 'REGEXP'
-                anyOf { branch 'master'; branch 'main' }
             }
             steps {
                 echo 'mock tag and deploy PRD'
