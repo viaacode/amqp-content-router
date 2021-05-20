@@ -80,6 +80,7 @@ pipeline {
             steps {
                 container('oc') {
                     script {
+                        echo 'Deploying to INT'
                         sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
                         sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:INT -n $OC_PROJECT'
                     }
