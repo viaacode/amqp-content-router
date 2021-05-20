@@ -38,6 +38,8 @@ pipeline {
         stage('Checkout code') {
             steps {
                 checkout scm
+                echo "${env.TAG_NAME}"
+                echo "${env.BRANCH_NAME}"
             }
         }
         stage('Test code') {
@@ -79,10 +81,11 @@ pipeline {
         }
         stage('Deploy PRD') {
             when {
-                tag pattern: '^v*', comparator: "REGEXP"
+                buildingTag()
+                tag pattern: '^v*', comparator: 'REGEXP'
+                anyOf { branch 'master'; branch 'main' }
             }
             steps {
-                echo "${env.BRANCH_NAME}"
                 echo 'mock tag and deploy PRD'
             }
         }
