@@ -65,7 +65,7 @@ pipeline {
                         oc project $OC_PROJECT
                         oc import-image $BASE_IMG --confirm
                         oc new-build --strategy=docker --name $APP_NAME -n $OC_PROJECT .
-                        oc logs -f bc/$APP_NAME | egrep 'Push successful'|| oc start-build --follow=true $APP_NAME
+                        oc logs -f bc/$APP_NAME
                         '''
                     }
                 }
