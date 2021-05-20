@@ -103,7 +103,7 @@ pipeline {
         }
         stage('Deploy PRD') {
             when {
-                tag 'v*'
+                tag pattern: '^v*', comparator: 'REGEXP'
             }
             steps {
                 container('oc') {
