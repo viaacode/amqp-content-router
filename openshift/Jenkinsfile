@@ -34,6 +34,13 @@ pipeline {
     options {
         timeout(time: 45, unit: 'MINUTES')
     }
+    environment {
+        OC_PROJECT = 'vrt-intake'
+        BASE_IMG = 'python:3.7'
+        APP_REPO = 'https://github.com/viaacode/amqp-content-router.git'
+        OC_URL = 'https://c113-e.private.eu-de.containers.cloud.ibm.com:30227'
+        APP_NAME = 'amqp-content-router'
+    }
     stages {
         stage('Checkout code') {
             steps {
@@ -54,10 +61,11 @@ pipeline {
                 container('oc') {
                     script {
                         sh '''#!/bin/bash
-                        login_oc.sh https://c113-e.private.eu-de.containers.cloud.ibm.com:30227 > /dev/null || echo ok
-                        oc project vrt-intake
-                        oc import-image python:3.7 --confirm
-                        oc new-build --strategy=docker --name amqp-content-router-from-jenkins -n vrt-intake .
+                        login_oc.sh $OC_URL > /dev/null || echo ok
+                        oc project $OC_PROJECT
+                        oc import-image $BASE_IMG --confirm
+                        oc new-build --strategy=docker --name $APP_NAME -n $OC_PROJECT .
+                        oc logs -f bc/$APP_NAME | egrep 'Push successful'|| oc start-build --follow=true $APP_NAME
                         '''
                     }
                 }
