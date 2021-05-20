@@ -72,7 +72,10 @@ pipeline {
         }
         stage('Deploy INT') {
             when {
-                branch 'ci-test'
+                anyOf {
+                    changeRequest target: 'master'
+                    changeRequest target: 'main'
+                }
             }
             steps {
                 container('oc') {
