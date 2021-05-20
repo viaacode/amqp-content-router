@@ -71,7 +71,7 @@ pipeline {
         }
         stage('Deploy QAS') {
             when {
-                branch 'ci-test'
+                anyOf { branch 'master'; branch 'main' }
             }
             steps {
                 echo 'mock tag and deploy QAS'
@@ -79,9 +79,10 @@ pipeline {
         }
         stage('Deploy PRD') {
             when {
-                buildingTag()
+                tag 'v*.*.*'
             }
             steps {
+                echo "${env.BRANCH_NAME}"
                 echo 'mock tag and deploy PRD'
             }
         }
