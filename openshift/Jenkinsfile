@@ -77,7 +77,12 @@ pipeline {
                 branch 'ci-test'
             }
             steps {
-                sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:INT -n $OC_PROJECT'
+                container('oc') {
+                    script {
+                        sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
+                        sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:INT -n $OC_PROJECT'
+                    }
+                }
             }
         }
         stage('Deploy QAS') {
@@ -85,7 +90,12 @@ pipeline {
                 anyOf { branch 'master'; branch 'main' }
             }
             steps {
-                sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:QAS -n $OC_PROJECT'
+                container('oc') {
+                    script {
+                        sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
+                        sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:QAS -n $OC_PROJECT'
+                    }
+                }
             }
         }
         stage('Deploy PRD') {
@@ -93,8 +103,13 @@ pipeline {
                 buildingTag()
             }
             steps {
-                sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:$TAG_NAME -n $OC_PROJECT'
-                sh 'oc tag $APP_NAME:$TAG_NAME $APP_NAME:PRD -n $OC_PROJECT'
+                container('oc') {
+                    script {
+                        sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
+                        sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:$TAG_NAME -n $OC_PROJECT'
+                        sh 'oc tag $APP_NAME:$TAG_NAME $APP_NAME:PRD -n $OC_PROJECT'
+                    }
+                }
             }
         }
     }
