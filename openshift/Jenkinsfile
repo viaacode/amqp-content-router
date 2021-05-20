@@ -1,85 +1,118 @@
 pipeline {
     agent {
-      node {
-        // spin up a pod to run this build on
-        label 'docker'
-      }
+        kubernetes {
+            defaultContainer 'default'
+            yaml '''\
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          labels:
+            component: builder
+            lang: python
+            app: amqp-content-router
+        spec:
+          containers:
+          - name: default
+            image: python:3.7
+            command:
+            - cat
+            tty: true
+          - name: oc
+            image: image-registry.openshift-image-registry.svc:5000/ci-cd/py:3.7
+            command:
+            - cat
+            tty: true
+            imagePullPolicy: Always
+          - name: python37
+            image: python:3.7
+            command:
+            - cat
+            tty: true
+        '''.stripIndent()
+        }
     }
     options {
         timeout(time: 45, unit: 'MINUTES')
     }
+    environment {
+        OC_PROJECT = 'vrt-intake'
+        BASE_IMG = 'python:3.7'
+        APP_REPO = 'https://github.com/viaacode/amqp-content-router.git'
+        OC_URL = 'https://c113-e.private.eu-de.containers.cloud.ibm.com:30227'
+        APP_NAME = 'amqp-content-router'
+        GIT_SHORT_COMMIT = sh(script: "printf \$(git rev-parse --short ${GIT_COMMIT})", returnStdout: true)
+    }
     stages {
-        stage('Build docker image') {
+        stage('Checkout code') {
             steps {
-                sh 'make -f ./openshift/Makefile build'
+                checkout scm
             }
         }
-        stage('Run tests in container') {
+        stage('Test code') {
             steps {
-                sh 'make -f ./openshift/Makefile test'
+                sh 'pip install -r requirements.txt --extra-index-url http://do-prd-mvn-01.do.viaa.be:8081/repository/pypi-all/simple --trusted-host do-prd-mvn-01.do.viaa.be'
+                sh 'cp .env.example .env'
+                sh 'pytest -vvv'
             }
         }
-        stage('Run linter in container') {
+        stage('Build code') {
             steps {
-                sh 'make -f ./openshift/Makefile lint'
-            }
-        }
-        stage('Push to Docker repo') {
-            steps {
-                sh 'make -f ./openshift/Makefile push'
-            }
-        }
-        stage('Tag INT') {
-            steps {
-                sh 'make -f ./openshift/Makefile tag-int'
+                container('oc') {
+                    script {
+                        sh '''#!/bin/bash
+                        login_oc.sh $OC_URL > /dev/null || echo ok
+                        oc project $OC_PROJECT
+                        oc import-image $BASE_IMG --confirm
+                        oc new-build --strategy=docker --name $APP_NAME-$GIT_SHORT_COMMIT --to $APP_NAME:$GIT_SHORT_COMMIT -n $OC_PROJECT . && sleep 1
+                        oc logs -f bc/$APP_NAME-$GIT_SHORT_COMMIT | egrep 'Push successful'
+                        '''
+                    }
+                }
             }
         }
         stage('Deploy INT') {
+            when {
+                anyOf {
+                    changeRequest target: 'master'
+                    changeRequest target: 'main'
+                }
+            }
             steps {
-                sh 'make -f ./openshift/Makefile deploy-int'
+                container('oc') {
+                    script {
+                        echo 'Deploying to INT'
+                        sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
+                        sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:INT -n $OC_PROJECT'
+                    }
+                }
             }
         }
-        stage('Test INT') {
-            steps {
-                sh 'make -f ./openshift/Makefile test-int'
+        stage('Deploy QAS') {
+            when {
+                anyOf { branch 'master'; branch 'main' }
             }
-        }
-        stage('Tag QAS') {
             steps {
-                sh 'make -f ./openshift/Makefile tag-qas'
-            }
-        }
-        stage('Deploy qas') {
-            steps {
-                sh 'make -f ./openshift/Makefile deploy-qas'
-            }
-        }
-        stage('Test QAS') {
-            steps {
-                sh 'make -f ./openshift/Makefile test-qas'
-            }
-        }
-        stage('Approve') {
-            steps {
-                input message: "Do you want to approve the deploy in production?", id: "approval"
-                sh 'make -f ./openshift/Makefile approved'
-            }
-        }
-        stage('Tag PRD') {
-            steps {
-                sh 'make -f ./openshift/Makefile tag-prd'
+                container('oc') {
+                    script {
+                        sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
+                        sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:QAS -n $OC_PROJECT'
+                    }
+                }
             }
         }
         stage('Deploy PRD') {
-            steps {
-                sh 'make -f ./openshift/Makefile deploy-prd'
+            when {
+                buildingTag()
             }
-        }
-    }
-    post {
-        always {
-            sh 'make -f ./openshift/Makefile post-clean'
-            cleanWs()
+            steps {
+                container('oc') {
+                    script {
+                        sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
+                        sh 'oc tag $APP_NAME:$GIT_SHORT_COMMIT $APP_NAME:$TAG_NAME -n $OC_PROJECT'
+                        sh 'oc tag $APP_NAME:$TAG_NAME $APP_NAME:PRD -n $OC_PROJECT'
+                    }
+                }
+            }
         }
     }
 }
