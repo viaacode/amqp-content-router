@@ -42,7 +42,10 @@ pipeline {
         APP_NAME = 'amqp-content-router'
         TAG_NAME = "${env.TAG_NAME}"
         BRANCH_NAME = "${env.BRANCH_NAME}"
-        GIT_COMMIT = "${env.GIT_COMMIT}"
+        GIT_COMMIT = = sh(
+                script: "printf \$(git rev-parse --short ${GIT_COMMIT})",
+                returnStdout: true
+        )
     }
     stages {
         stage('Checkout code') {
