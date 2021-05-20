@@ -51,7 +51,6 @@ pipeline {
                 echo "${GIT_COMMIT}"
                 echo "${env.BRANCH_NAME}"
                 echo "${env.TAG_NAME}"
-                echo buildingTag()
             }
         }
         stage('Test code') {
@@ -104,7 +103,7 @@ pipeline {
         }
         stage('Deploy PRD') {
             when {
-                branch 'v*'
+                tag 'v*'
             }
             steps {
                 container('oc') {
