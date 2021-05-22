@@ -1,3 +1,9 @@
+def image
+
+node('slave') {
+    image = test()
+}
+
 pipeline {
     agent {
         kubernetes {
@@ -13,7 +19,7 @@ pipeline {
         spec:
           containers:
           - name: default
-            image: ${test()}
+            image: ${image}
             command:
             - cat
             tty: true
