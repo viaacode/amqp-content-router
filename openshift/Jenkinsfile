@@ -118,7 +118,7 @@ pipeline {
 }
 
 String test() {
-    file = readFile 'Dockerfile'
+    file = new File('Dockerfile').text
     imageLine = file.split('\n')[0].trim()
     image = imageLine.split(' ')[1].trim()
 
