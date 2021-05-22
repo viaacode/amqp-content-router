@@ -1,8 +1,4 @@
-def image
-
-node('slave') {
-    image = test()
-}
+import hudson.model.*
 
 pipeline {
     agent {
@@ -19,7 +15,7 @@ pipeline {
         spec:
           containers:
           - name: default
-            image: ${image}
+            image: ${test}
             command:
             - cat
             tty: true
