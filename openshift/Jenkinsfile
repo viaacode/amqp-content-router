@@ -117,10 +117,7 @@ pipeline {
     }
 }
 
-String test() {
-    file = new File('Dockerfile')
-    imageLine = file.split('\n')[0].trim()
-    image = imageLine.split(' ')[1].trim()
 
-    return image
+String test() {
+    return 'python:3.7'
 }
