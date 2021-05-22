@@ -1,5 +1,3 @@
-import hudson.model.*
-
 pipeline {
     agent {
         kubernetes {
@@ -15,7 +13,7 @@ pipeline {
         spec:
           containers:
           - name: default
-            image: ${test()}
+            image: ${getImageFromDockerfile()}
             command:
             - cat
             tty: true
@@ -25,11 +23,6 @@ pipeline {
             - cat
             tty: true
             imagePullPolicy: Always
-          - name: python37
-            image: python:3.7
-            command:
-            - cat
-            tty: true
         """.stripIndent()
         }
     }
@@ -119,6 +112,6 @@ pipeline {
     }
 }
 
-void test() {
-    sh(returnStdout: true, script: 'echo python:3.7').trim()
+void getImageFromDockerfile() {
+    return 'python:3.7'
 }
