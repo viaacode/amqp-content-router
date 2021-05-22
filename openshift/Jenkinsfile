@@ -117,6 +117,10 @@ pipeline {
     }
 }
 
-def test() {
-    return 'Python:3.7'
+String test() {
+    file = readFile 'Dockerfile'
+    imageLine = file.split('\n')[0].trim()
+    image = imageLine.split(' ')[1].trim()
+
+    return image
 }
