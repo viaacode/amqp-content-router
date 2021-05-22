@@ -117,9 +117,6 @@ pipeline {
     }
 }
 
-
-
-String test() {
-    sh 'cat Dockerfile'
-    return 'python:3.7'
+void test() {
+    sh(returnStdout: true, script: 'echo python:3.7').trim()
 }
