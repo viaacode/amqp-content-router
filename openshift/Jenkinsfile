@@ -15,7 +15,7 @@ pipeline {
         spec:
           containers:
           - name: default
-            image: ${test}
+            image: ${test()}
             command:
             - cat
             tty: true
