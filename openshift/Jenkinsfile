@@ -118,6 +118,8 @@ pipeline {
 }
 
 
+def readContent = readFile 'Dockerfile'
+
 String test() {
     return 'python:3.7'
 }
