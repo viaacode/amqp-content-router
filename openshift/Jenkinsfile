@@ -2,7 +2,7 @@ pipeline {
     agent {
         kubernetes {
             defaultContainer 'default'
-            yaml '''\
+            yaml """\
         apiVersion: v1
         kind: Pod
         metadata:
@@ -13,7 +13,7 @@ pipeline {
         spec:
           containers:
           - name: default
-            image: python:3.7
+            image: ${test()}
             command:
             - cat
             tty: true
@@ -28,7 +28,7 @@ pipeline {
             command:
             - cat
             tty: true
-        '''.stripIndent()
+        """.stripIndent()
         }
     }
     options {
@@ -115,4 +115,8 @@ pipeline {
             }
         }
     }
+}
+
+def test() {
+    return 'Python:3.7'
 }
