@@ -35,7 +35,7 @@ pipeline {
         APP_REPO = 'https://github.com/viaacode/amqp-content-router.git'
         OC_URL = 'https://c113-e.private.eu-de.containers.cloud.ibm.com:30227'
         APP_NAME = 'amqp-content-router'
-        GIT_SHORT_COMMIT = sh(script: "printf \$(git rev-parse --short ${GIT_COMMIT})", returnStdout: true)
+        GIT_SHORT_COMMIT = sh(script: "printf \$(git describe --tags || echo latest)", returnStdout: true)
     }
     stages {
         stage('Checkout code') {
