@@ -41,7 +41,7 @@ pipeline {
     stages {
         stage('Checkout code') {
             steps {
-                checkout scm
+                checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH_NAME}"]], extensions: [[$class: 'GitSCMStatusChecksExtension'], [$class: 'AuthorInChangelog'], [$class: 'LocalBranch', localBranch: "${BRANCH_NAME}"]], userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
             }
         }
         stage('Test code') {
