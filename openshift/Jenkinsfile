@@ -94,8 +94,6 @@ pipeline {
                     script {
                         sh 'login_oc.sh $OC_URL > /dev/null || echo ok'
                         sh 'oc tag $APP_NAME:$IMAGE_TAG $APP_NAME:qas -n $OC_PROJECT'
-                        sh 'oc logs -f bc/$APP_NAME-$GIT_SHORT_COMMIT | egrep 'Push successful''
-                        
                     }
                 }
             }
