@@ -63,7 +63,7 @@ pipeline {
                             sleep 2
                             oc logs -f bc/$APP_NAME-$GIT_SHORT_COMMIT | egrep 'Push successful'
                         else
-                            oc start-build $APP_NAME-$SHORTCOMMIT --wait=true
+                            oc start-build $APP_NAME-$GIT_SHORT_COMMIT --wait=true
                         fi
                         '''
                     }
