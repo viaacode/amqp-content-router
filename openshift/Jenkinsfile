@@ -54,10 +54,11 @@ pipeline {
         stage('Build code') {
             steps {
                 container('oc') {
-                    checkout scm
                     script {
                         sh '''#!/bin/bash
                         login_oc.sh $OC_URL > /dev/null || echo ok
+                        echo `git status`
+                        echo `git log -n 1`
                         oc project $OC_PROJECT
                         oc import-image $BASE_IMG --confirm
                         if oc new-build -l ref=$GIT_SHORT_COMMIT --strategy=docker --name $APP_NAME-$GIT_SHORT_COMMIT --to $APP_NAME:$IMAGE_TAG -n $OC_PROJECT .; then
