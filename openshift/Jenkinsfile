@@ -141,9 +141,17 @@ pipeline {
     }
     post {
         always {
-            junit (
-                testResults: './tests/test_results.xml'
-            )
+            container('test'){
+                script{
+                    if (fileExists('./tests/test_results.xml')) {
+                        junit (
+                            testResults: './tests/test_results.xml'
+                        )
+                    } else {
+                        echo "No test results found"
+                    }
+                }
+            }
         }
     }
 }
