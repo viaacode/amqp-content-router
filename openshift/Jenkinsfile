@@ -50,7 +50,7 @@ pipeline {
             steps {
                 sh 'pip install -r requirements.txt --extra-index-url http://do-prd-mvn-01.do.viaa.be:8081/repository/pypi-all/simple --trusted-host do-prd-mvn-01.do.viaa.be'
                 sh 'cp .env.example .env'
-                sh 'pytest -vvv'
+                sh 'pytest -vvv --cov=./app -o junit_family=xunit2 --junitxml=./tests/test_results.xml'
             }
         }
         stage('Build code') {
@@ -137,6 +137,13 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    post {
+        always {
+            junit (
+                testResults: './tests/test_results.xml'
+            )
         }
     }
 }
