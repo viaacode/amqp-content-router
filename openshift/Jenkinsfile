@@ -144,6 +144,9 @@ pipeline {
             container('default') {
                 script {
                     if (fileExists('./tests/test_results.xml')) {
+                        echo "Test results found"
+                        sh 'cat "./tests/test_results.xml"'
+                        sh 'ls -ltrha'
                         junit './tests/test_results.xml'
                     } else {
                         echo "No test results found"
