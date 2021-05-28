@@ -141,8 +141,8 @@ pipeline {
     }
     post {
         always {
-            script {
-              container('test') {
+            container('default') {
+                script {
                     if (fileExists('./tests/test_results.xml')) {
                         junit './tests/test_results.xml'
                     } else {
