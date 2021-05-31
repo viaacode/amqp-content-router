@@ -33,19 +33,18 @@ pipeline {
     environment {
         OC_PROJECT = 'vrt-intake'
         BASE_IMG = 'python:3.7'
+        APP_REPO = 'https://github.com/viaacode/amqp-content-router.git'
         OC_URL = 'https://c113-e.private.eu-de.containers.cloud.ibm.com:30227'
         APP_NAME = 'amqp-content-router'
         BUILD_REF = calculateBuildConfigRef()
-        GIT_URL = "${GIT_URL}"
     }
     stages {
         stage('Checkout code') {
             steps {
                 echo "Build ref: ${BUILD_REF}"
-                echo "Git URL: ${GIT_URL}"
                 checkout([$class: 'GitSCM', branches: [[name: "*/${BUILD_REF}"]],
                 extensions: [[$class: 'LocalBranch']],
-                userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${GIT_URL}"]]])
+                userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
                 script{
                     env.GIT_SHORT_COMMIT = sh(script: "printf \$(git rev-parse --short ${GIT_COMMIT})", returnStdout: true)
                     env.IMAGE_TAG = sh(script: "git describe --tags || echo latest", returnStdout: true)
@@ -180,7 +179,7 @@ void getImageFromDockerfile() {
 void setGitHubBuildStatus(String message, String state) {
     step([
         $class: "GitHubCommitStatusSetter",
-        reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${GIT_URL}"],
+        reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${APP_REPO}"],
         //contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
         errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
         statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
