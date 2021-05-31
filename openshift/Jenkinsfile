@@ -41,6 +41,11 @@ pipeline {
     stages {
         stage('Checkout code') {
             steps {
+                echo "Git branch: ${GIT_BRANCH}"
+                echo "Branch name: ${BRANCH_NAME}"
+                echo "Change branch: ${CHANGE_BRANCH}"
+                echo "Change target: ${CHANGE_TARGET}"
+                echo "Git commit: ${GIT_COMMIT}"
                 checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH_NAME}"]],
                 extensions: [[$class: 'LocalBranch', localBranch: "${BRANCH_NAME}"]],
                 userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
