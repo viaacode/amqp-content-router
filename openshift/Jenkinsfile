@@ -37,17 +37,14 @@ pipeline {
         APP_NAME = 'amqp-content-router'
         GIT_SHORT_COMMIT = sh(script: "printf \$(git rev-parse --short ${GIT_COMMIT})", returnStdout: true)
         IMAGE_TAG = sh(script: "git describe --tags || echo latest", returnStdout: true)
+        BUILD_REF = calculateBuildConfigRef()
     }
     stages {
         stage('Checkout code') {
             steps {
-                echo "Git branch: ${GIT_BRANCH}"
-                echo "Branch name: ${BRANCH_NAME}"
-                echo "Change branch: ${CHANGE_BRANCH}"
-                echo "Change target: ${CHANGE_TARGET}"
-                echo "Git commit: ${GIT_COMMIT}"
-                checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH_NAME}"]],
-                extensions: [[$class: 'LocalBranch', localBranch: "${BRANCH_NAME}"]],
+                echo "Build ref: ${BUILD_REF}"
+                checkout([$class: 'GitSCM', branches: [[name: "*/${BUILD_REF}"]],
+                extensions: [[$class: 'LocalBranch']],
                 userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
             }
         }
@@ -64,8 +61,6 @@ pipeline {
                     script {
                         sh '''#!/bin/bash
                         login_oc.sh $OC_URL > /dev/null || echo ok
-                        echo `git status`
-                        echo `git log -n 1`
                         oc project $OC_PROJECT
                         oc import-image $BASE_IMG --confirm
                         if oc new-build -l ref=$GIT_SHORT_COMMIT --strategy=docker --name $APP_NAME-$GIT_SHORT_COMMIT --to $APP_NAME:$IMAGE_TAG -n $OC_PROJECT .; then
@@ -95,9 +90,9 @@ pipeline {
                         oc project $OC_PROJECT
                         oc tag $APP_NAME:$IMAGE_TAG $APP_NAME:int
                         # Patch the deployment in order to trigger rollout
-                        oc patch deployment $APP_NAME-int -p '{"spec": {"template": {"metadata": {"annotations": {"git-ref": "$IMAGE_TAG"}}}}}'
+                        # oc patch deployment $APP_NAME-int -p '{"spec": {"template": {"metadata": {"annotations": {"git-ref": "$IMAGE_TAG"}}}}}'
                         # Check the status of the rollout
-                        oc rollout status deployment/$APP_NAME-int --watch=true
+                        # oc rollout status deployment/$APP_NAME-int --watch=true
                         '''
                     }
                 }
@@ -145,28 +140,28 @@ pipeline {
         }
     }
     post {
+        success {
+            script {
+                if (env.BRANCH_NAME.startsWith('PR')) {
+                    setGitHubBuildStatus("Build", "SUCCESS")
+                }
+            }
+        }
+        failure {
+            script {
+                if (env.BRANCH_NAME.startsWith('PR')) {
+                    setGitHubBuildStatus("Build", "FAILED")
+                }
+            }
+        }
         always {
             container('default') {
                 // Archive tets results
                 script {
                     if (fileExists('./tests/test_results.xml')) {
-                        echo "Test results found"
-                        sh 'cat "./tests/test_results.xml"'
-                        sh 'ls -ltrha'
                         junit 'tests/test_results.xml'
                     } else {
                         echo "No test results found"
-                    }
-                }
-                script {
-                    if (env.BRANCH_NAME.startsWith('PR')) {
-                        // Report the build status
-                        success {
-                            setGitHubBuildStatus("Build", "SUCCESS")
-                        }
-                        failure {
-                            setGitHubBuildStatus("Build", "FAILED")
-                        }
                     }
                 }
             }
@@ -179,11 +174,21 @@ void getImageFromDockerfile() {
 }
 
 void setGitHubBuildStatus(String message, String state) {
-  step([
-      $class: "GitHubCommitStatusSetter",
-      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${APP_REPO}"],
-      //contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
-      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
-      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
-  ]);
+    step([
+        $class: "GitHubCommitStatusSetter",
+        reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${APP_REPO}"],
+        //contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+        errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+        statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+    ])
+}
+
+def calculateBuildConfigRef() {
+    if (env.TAG_NAME) {
+        return env.TAG_NAME
+    } else if (env.CHANGE_BRANCH) {
+        return env.CHANGE_BRANCH
+    } else {
+        return env.BRANCH_NAME
+    }
 }
