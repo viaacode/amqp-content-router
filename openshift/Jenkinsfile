@@ -36,11 +36,13 @@ pipeline {
         OC_URL = 'https://c113-e.private.eu-de.containers.cloud.ibm.com:30227'
         APP_NAME = 'amqp-content-router'
         BUILD_REF = calculateBuildConfigRef()
+        GIT_URL = "${GIT_URL}"
     }
     stages {
         stage('Checkout code') {
             steps {
                 echo "Build ref: ${BUILD_REF}"
+                echo "Git URL: ${GIT_URL}"
                 checkout([$class: 'GitSCM', branches: [[name: "*/${BUILD_REF}"]],
                 extensions: [[$class: 'LocalBranch']],
                 userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${GIT_URL}"]]])
