@@ -37,6 +37,7 @@ pipeline {
         APP_NAME = 'amqp-content-router'
         GIT_SHORT_COMMIT = sh(script: "printf \$(git rev-parse --short ${GIT_COMMIT})", returnStdout: true)
         IMAGE_TAG = sh(script: "git describe --tags || echo latest", returnStdout: true)
+        BUILD_REF = getBuildConfigRef()
     }
     stages {
         stage('Checkout code') {
@@ -45,16 +46,10 @@ pipeline {
                 echo "Branch name: ${BRANCH_NAME}"
                 echo "Change branch: ${CHANGE_BRANCH}"
                 echo "Change target: ${CHANGE_TARGET}"
-                checkout([
-                    $class: 'GitSCM',
-                    branches: scm.branches,
-                    doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
-                    extensions: scm.extensions + [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'reps/reponame']],
-                    userRemoteConfigs: scm.userRemoteConfigs
-                    ])
-                //checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH_NAME}"]],
-                //extensions: [[$class: 'LocalBranch']],
-                //userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
+                echo "Build ref: ${BUILD_REF}"
+                checkout([$class: 'GitSCM', branches: [[name: "*/${BUILD_REF}"]],
+                extensions: [[$class: 'LocalBranch']],
+                userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
             }
         }
         stage('Test code') {
@@ -188,11 +183,19 @@ void getImageFromDockerfile() {
 }
 
 void setGitHubBuildStatus(String message, String state) {
-  step([
-      $class: "GitHubCommitStatusSetter",
-      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${APP_REPO}"],
-      //contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
-      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
-      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
-  ])
+    step([
+        $class: "GitHubCommitStatusSetter",
+        reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${APP_REPO}"],
+        //contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+        errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+        statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+    ])
+}
+
+def getBuildConfigRef() {
+    if (env.CHANGE_BRANCH) {
+        return env.CHANGE_BRANCH
+    } else {
+        return env.BRANCH_NAME
+    }
 }
