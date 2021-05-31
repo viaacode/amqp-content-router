@@ -42,10 +42,6 @@ pipeline {
     stages {
         stage('Checkout code') {
             steps {
-                echo "Git branch: ${GIT_BRANCH}"
-                echo "Branch name: ${BRANCH_NAME}"
-                echo "Change branch: ${CHANGE_BRANCH}"
-                echo "Change target: ${CHANGE_TARGET}"
                 echo "Build ref: ${BUILD_REF}"
                 checkout([$class: 'GitSCM', branches: [[name: "*/${BUILD_REF}"]],
                 extensions: [[$class: 'LocalBranch']],
@@ -65,8 +61,6 @@ pipeline {
                     script {
                         sh '''#!/bin/bash
                         login_oc.sh $OC_URL > /dev/null || echo ok
-                        echo `git status`
-                        echo `git log -n 1`
                         oc project $OC_PROJECT
                         oc import-image $BASE_IMG --confirm
                         if oc new-build -l ref=$GIT_SHORT_COMMIT --strategy=docker --name $APP_NAME-$GIT_SHORT_COMMIT --to $APP_NAME:$IMAGE_TAG -n $OC_PROJECT .; then
@@ -165,9 +159,6 @@ pipeline {
                 // Archive tets results
                 script {
                     if (fileExists('./tests/test_results.xml')) {
-                        echo "Test results found"
-                        sh 'cat "./tests/test_results.xml"'
-                        sh 'ls -ltrha'
                         junit 'tests/test_results.xml'
                     } else {
                         echo "No test results found"
