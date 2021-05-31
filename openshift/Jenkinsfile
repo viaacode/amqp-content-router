@@ -68,7 +68,7 @@ pipeline {
                         oc project $OC_PROJECT
                         oc import-image $BASE_IMG --confirm
                         if oc new-build -l ref=$GIT_SHORT_COMMIT --strategy=docker --name $APP_NAME-$GIT_SHORT_COMMIT --to $APP_NAME:$IMAGE_TAG -n $OC_PROJECT .; then
-                            sleep 2
+                            sleep 3
                             oc logs -f bc/$APP_NAME-$GIT_SHORT_COMMIT | egrep 'Push successful'
                         else
                             oc start-build $APP_NAME-$GIT_SHORT_COMMIT --wait=true
