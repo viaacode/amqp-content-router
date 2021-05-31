@@ -189,7 +189,7 @@ void setGitHubBuildStatus(String message, String state) {
 
 def calculateBuildConfigRef() {
     if (env.TAG_NAME) {
-        return env.TAG_NAME
+        return env.BRANCH_NAME
     } else if (env.CHANGE_BRANCH) {
         return env.CHANGE_BRANCH
     } else {
