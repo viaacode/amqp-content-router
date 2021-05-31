@@ -140,6 +140,20 @@ pipeline {
         }
     }
     post {
+        success {
+            script {
+                if (env.BRANCH_NAME.startsWith('PR')) {
+                    setGitHubBuildStatus("Build", "SUCCESS")
+                }
+            }
+        }
+        failure {
+            script {
+                if (env.BRANCH_NAME.startsWith('PR')) {
+                    setGitHubBuildStatus("Build", "FAILED")
+                }
+            }
+        }
         always {
             container('default') {
                 // Archive tets results
@@ -151,17 +165,6 @@ pipeline {
                         junit 'tests/test_results.xml'
                     } else {
                         echo "No test results found"
-                    }
-                }
-                script {
-                    if (env.BRANCH_NAME.startsWith('PR')) {
-                        // Report the build status
-                        success {
-                            setGitHubBuildStatus("Build", "SUCCESS")
-                        }
-                        failure {
-                            setGitHubBuildStatus("Build", "FAILED")
-                        }
                     }
                 }
             }
@@ -180,5 +183,5 @@ void setGitHubBuildStatus(String message, String state) {
       //contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
       errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
       statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
-  ]);
+  ])
 }
