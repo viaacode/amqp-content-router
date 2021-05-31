@@ -45,10 +45,16 @@ pipeline {
                 echo "Branch name: ${BRANCH_NAME}"
                 echo "Change branch: ${CHANGE_BRANCH}"
                 echo "Change target: ${CHANGE_TARGET}"
-                sh 'printenv'
-                checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH_NAME}"]],
-                extensions: [[$class: 'LocalBranch']],
-                userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
+                checkout([
+                    $class: 'GitSCM',
+                    branches: scm.branches,
+                    doGenerateSubmoduleConfigurations: scm.doGenerateSubmoduleConfigurations,
+                    extensions: scm.extensions + [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'reps/reponame']],
+                    userRemoteConfigs: scm.userRemoteConfigs
+                    ])
+                //checkout([$class: 'GitSCM', branches: [[name: "*/${BRANCH_NAME}"]],
+                //extensions: [[$class: 'LocalBranch']],
+                //userRemoteConfigs: [[credentialsId: 'meemoo-ci', url: "${APP_REPO}"]]])
             }
         }
         stage('Test code') {
