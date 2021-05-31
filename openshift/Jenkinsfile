@@ -37,7 +37,7 @@ pipeline {
         APP_NAME = 'amqp-content-router'
         GIT_SHORT_COMMIT = sh(script: "printf \$(git rev-parse --short ${GIT_COMMIT})", returnStdout: true)
         IMAGE_TAG = sh(script: "git describe --tags || echo latest", returnStdout: true)
-        BUILD_REF = getBuildConfigRef()
+        BUILD_REF = calculateBuildConfigRef()
     }
     stages {
         stage('Checkout code') {
@@ -192,8 +192,10 @@ void setGitHubBuildStatus(String message, String state) {
     ])
 }
 
-def getBuildConfigRef() {
-    if (env.CHANGE_BRANCH) {
+def calculateBuildConfigRef() {
+    if (env.TAG_NAME) {
+        return env.TAG_NAME
+    } elif (env.CHANGE_BRANCH) {
         return env.CHANGE_BRANCH
     } else {
         return env.BRANCH_NAME
