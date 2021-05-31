@@ -90,9 +90,9 @@ pipeline {
                         oc project $OC_PROJECT
                         oc tag $APP_NAME:$IMAGE_TAG $APP_NAME:int
                         # Patch the deployment in order to trigger rollout
-                        oc patch deployment $APP_NAME-int -p '{"spec": {"template": {"metadata": {"annotations": {"git-ref": "$IMAGE_TAG"}}}}}'
+                        # oc patch deployment $APP_NAME-int -p '{"spec": {"template": {"metadata": {"annotations": {"git-ref": "$IMAGE_TAG"}}}}}'
                         # Check the status of the rollout
-                        oc rollout status deployment/$APP_NAME-int --watch=true
+                        # oc rollout status deployment/$APP_NAME-int --watch=true
                         '''
                     }
                 }
