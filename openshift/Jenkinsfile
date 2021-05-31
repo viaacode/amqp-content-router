@@ -142,6 +142,7 @@ pipeline {
     post {
         always {
             container('default') {
+                // Archive tets results
                 script {
                     if (fileExists('./tests/test_results.xml')) {
                         echo "Test results found"
@@ -152,6 +153,17 @@ pipeline {
                         echo "No test results found"
                     }
                 }
+                script {
+                    if (env.BRANCH_NAME.startsWith('PR')) {
+                        // Report the build status
+                        success {
+                            setGitHubBuildStatus("Build", "SUCCESS")
+                        }
+                        failure {
+                            setGitHubBuildStatus("Build", "FAILED")
+                        }
+                    }
+                }
             }
         }
     }
@@ -159,4 +171,14 @@ pipeline {
 
 void getImageFromDockerfile() {
     return 'python:3.7'
+}
+
+void setGitHubBuildStatus(String message, String state) {
+  step([
+      $class: "GitHubCommitStatusSetter",
+      reposSource: [$class: "ManuallyEnteredRepositorySource", url: "${APP_REPO}"],
+      //contextSource: [$class: "ManuallyEnteredCommitContextSource", context: "ci/jenkins/build-status"],
+      errorHandlers: [[$class: "ChangingBuildStatusErrorHandler", result: "UNSTABLE"]],
+      statusResultSource: [ $class: "ConditionalStatusResultSource", results: [[$class: "AnyBuildResult", message: message, state: state]] ]
+  ]);
 }
