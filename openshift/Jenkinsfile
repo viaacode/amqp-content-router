@@ -154,7 +154,7 @@ pipeline {
         failure {
             script {
                 if (env.BRANCH_NAME.startsWith('PR')) {
-                    setGitHubBuildStatus("Build", "FAILED")
+                    setGitHubBuildStatus("Build", "FAILURE")
                 }
             }
         }
