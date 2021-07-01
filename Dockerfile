@@ -8,6 +8,7 @@ WORKDIR /app
 
 # Copy all files
 COPY . .
+COPY config.yml.example config.yml
 RUN chown -R appuser:appgroup /app
 
 # We install all our Python dependencies. Add the extra index url because some
